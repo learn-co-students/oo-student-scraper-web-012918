@@ -1,105 +1,50 @@
 require 'open-uri'
+require 'nokogiri'
 require 'pry'
 
 class Scraper
 
-  def self.scrape_index_page(index_url)
+  def scrape_greatest_hits(index_url)
     doc = Nokogiri::HTML(open(index_url))
-    student_array = doc.css(".roster-cards-container .student-card")
+    #binding.pry
 
+    scraped_restaurants = []
 
-    scraped_students = []
-
-    student_array.each do |student|
-      scraped_student = {
-        :name => student.css(".student-name").text,
-        :location => student.css(".student-location").text,
-        :profile_url => student.css("a").attribute("href").value
+    restaurant_array = doc.css(".post__section .spot-block")
+    restaurant_array.each do |restaurant|
+      restaurant_hash = {
+        :name => restaurant.css(".spot-block__title a h3").text,
+        #:location => restaurant.css(".spot-block__neighborhoods a").text.gsub("\n", ""),
+        :address => restaurant.css("small").text,
+        :description => restaurant.css(".spot-block__description p").text,
       }
-      scraped_students << scraped_student
+      scraped_restaurants << restaurant_hash
     end
-
-    scraped_students
+    #binding.pry
+    scraped_restaurants
   end
 
 
-  def self.scrape_profile_page(profile_url)
-    doc = Nokogiri::HTML(open(profile_url))
-
-    twitter = ""
-    github = ""
-    linkedin = ""
-    blog = ""
-
+  def random_greatest_hits_full(greatest_hits_array)
     #binding.pry
-    links = doc.css(".social-icon-container a")
-    links.each do |link|
-      if link["href"].include?("twitter")
-        twitter = link["href"]
-      elsif link["href"].include?("github")
-        github = link["href"]
-      elsif link["href"].include?("linkedin")
-        linkedin = link["href"]
-      elsif link["href"].include?(".com")
-        blog = link["href"]
-      end
-    end
+    tonight_hash = greatest_hits_array.sample
+    puts "Tonight, you're going to #{tonight_hash[:name]}. It is located at #{tonight_hash[:address]} Here's what we think: #{tonight_hash[:description]}."
+    #greatest_hits_array.sample
+    #binding.pry
+  end
 
-    scraped_student = {
-      :twitter => twitter!= "" ? twitter : "",
-      :linkedin => linkedin!= "" ? linkedin : "",
-      :github => github!= "" ? github : "",
-      :blog => blog!= "" ? blog : "",
-      :profile_quote => doc.css(".profile-quote").text,
-      :bio => doc.css(".description-holder p").text
-    }
-    scraped_student.delete_if {|key, value| value == ""}
-
+  def random_greatest_hits_sample(greatest_hits_array)
+    puts "1. #{greatest_hits_array.sample[:name]}"
+    puts "2. #{greatest_hits_array.sample[:name]}"
+    puts "3. #{greatest_hits_array.sample[:name]}"
     #binding.pry
   end
 
 end
 
-#name = student.css(".student-name").text
-#location = student.css(".student-location").text
-#profile_url = student.css("a").attribute("href").value
-
-
-#links = doc.css(".social-icon-container")
-#twitter
-#linkedin
-#github
-#blog =
-#profile_quote = doc.css(".profile-quote").text
-#bio = doc.css(".bio-content").text
-
-# :twitter => twitter!= "" ? twitter : "no twitter supplied",
-# :linkedin => linkedin!= "" ? linkedin : "no linkedin supplied",
-# :github => github!= "" ? github : "no github supplied" ,
-# :blog => blog!= "" ? blog : "no blog supplied",
-
-# twitter = doc.css(".social-icon-container a")[0].attribute("href").value
-# # does_exist(twitter)
-# linkedin = doc.css(".social-icon-container a")[1].attribute("href").value
-# # does_exist(linkedin)
-# #github = doc.css(".social-icon-container a")[2].attribute("href").value
-# # does_exist(github)
-# #binding.pry
-# if doc.css(".social-icon-container a")[2] != []
-#   github = doc.css(".social-icon-container a")[2].attribute("href").value
-# else
-#   github = "no attribute supplied"
-# end
-
-#binding.pry
-
-# def does_exist(link)
-#   if link.include?(link.to_s)
-#     link = link
-#   else
-#     link = "not supplied by user"
-#   end
-# end
-
-# blog = doc.css(".social-icon-container a")[3].attribute("href").value
-# # does_exist(blog)
+infatuation = Scraper.new
+scraped = infatuation.scrape_greatest_hits("https://www.theinfatuation.com/new-york/guides/best-restaurants-in-nyc-greatest-hits-list")
+# infatuation.random_greatest_hits(scraped)
+# infatuation.random_greatest_hits_sample(scraped)
+# binding.pry
+# "hello"
